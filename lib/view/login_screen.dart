@@ -2,45 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../controller/microsoft_login_cubit.dart';
 import '../controller/microsoft_login_state.dart';
-
-
+import '../view/dashboard_screen.dart'; // ✅ Import your dashboard
 
 class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-              appBar: AppBar(
-          backgroundColor: const Color(0xFF084852),
-          elevation: 0,
-          title: Row(
-            children: [
-              Container(
-                height: 36,
-                width: 36,
-                decoration: BoxDecoration(
-                  color: Colors.white, // ✅ white background only for logo
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                padding: const EdgeInsets.all(4), // adds breathing room
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.network(
-                    'https://codeenforcementapp.web.app/assets/images/SJ_color_logo.png',
-                    fit: BoxFit.contain, // ✅ show full image, no crop
-                  ),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF084852),
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              height: 36,
+              width: 36,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.network(
+                  '[https://codeenforcementapp.web.app/assets/images/SJ_color_logo.png](https://codeenforcementapp.web.app/assets/images/SJ_color_logo.png)',
+                  fit: BoxFit.contain,
                 ),
               ),
-              const SizedBox(width: 12),
-              const Text(
-                "Codex App",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              "Codex App",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
       body: BlocProvider(
         create: (context) => AuthCubit(),
         child: BlocConsumer<AuthCubit, AuthState>(
@@ -50,49 +51,46 @@ class LoginScreen extends StatelessWidget {
                 SnackBar(content: Text("Error: ${state.errorMessage}")),
               );
             }
+
+            // ✅ When login is successful, navigate to Dashboard
+            if (state is AuthSuccess) {
+              Future.microtask(() {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                );
+              });
+            }
           },
           builder: (context, state) {
             if (state is AuthLoading) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (state is AuthSuccess) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Display profile photo if available
-                    
-                    SizedBox(height: 10),
-                    Text("Welcome, ${state.name}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 10),
-                    Text("Email: ${state.email}", style: TextStyle(fontSize: 16)),
-                    // SizedBox(height: 10),
-                    // Text("Id: ${state.Id}", style: TextStyle(fontSize: 16)),
-                    // SizedBox(height: 10),
-                    // Text("User profile: ${state.userProfiles}", style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    Text("Department: ${state.department}", style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 10),
-                    Text("Mobile: ${state.phone}", style: TextStyle(fontSize: 16)),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<AuthCubit>().logout(); // Call the logout method
-                      },
-                      child: Text("Logout"),
-                    ),
-                  ],
-                ),
-              );
+              // ✅ We don't need to show UI here because navigation will occur
+              return const SizedBox.shrink();
             }
 
             return Center(
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF084852),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 onPressed: () {
-                  context.read<AuthCubit>().login(); // call the login method
+                  context.read<AuthCubit>().login();
                 },
-                child: Text("Login with Microsoft"),
+                child: const Text(
+                  "Login with Microsoft",
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
             );
           },
@@ -101,5 +99,3 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
-
-

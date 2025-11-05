@@ -40,7 +40,7 @@ class DashboardScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
+            ),  
           ),
         ],
       ),
