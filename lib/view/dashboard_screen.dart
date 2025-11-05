@@ -1,173 +1,218 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class DashboardScreen extends StatelessWidget {
+
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  bool caseManagementExpanded = false;
+  int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 700;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FF),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        title: Text(
-          'City Staff Dashboard',
-          style: GoogleFonts.poppins(
-            color: Colors.black87,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.notifications_none,
-              color: Colors.blueAccent,
+      appBar: isMobile
+          ? AppBar(
+              backgroundColor: const Color(0xFF084852),
+              title: Text(
+                'City Staff',
+                style: GoogleFonts.poppins(color: Colors.white),
+              ),
+            )
+          : null,
+      drawer: isMobile ? Drawer(child: _buildSideNav()) : null,
+      body: Row(
+        children: [
+          if (!isMobile)
+            Container(
+              width: 250,
+              color: const Color(0xFF084852),
+              child: _buildSideNav(),
+            ),
+          Expanded(child: _buildDashboardContent()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSideNav() {
+    return Container(
+      color: const Color(0xFF084852),
+      child: ListView(
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(color: Color(0xFF084852)),
+            child: Row(
+              children: [
+                const SizedBox(width: 10),
+                Text(
+                  "City Staff",
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: CircleAvatar(
-              backgroundColor: Colors.blue.shade100,
-              child: const Text(
-                'V',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
+          _buildNavItem(Icons.dashboard, "Dashboard", 0),
+          ExpansionTile(
+            collapsedIconColor: Colors.white,
+            iconColor: Colors.white,
+            leading: const Icon(Icons.folder_shared, color:Colors.white),
+            title: Text(
+              "Case Management",
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
               ),
-            ),  
+            ),
+            initiallyExpanded: caseManagementExpanded,
+            onExpansionChanged: (expanded) {
+              setState(() => caseManagementExpanded = expanded);
+            },
+            children: [
+              _buildSubNavItem("New Complaint", 1),
+              _buildSubNavItem("Case Search", 2),
+            ],
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                int columns = constraints.maxWidth > 400 ? 2 : 1;
-                double cardWidth =
-                    (constraints.maxWidth - (12 * (columns - 1))) / columns;
+    );
+  }
 
-                final stats = [
-                  [
-                    'My Open Cases',
-                    '3',
-                    '+8.4% from last week',
-                    Colors.pinkAccent,
-                  ],
-                  [
-                    'My New Cases',
-                    '0',
-                    '+8.4% from last week',
-                    Colors.blueAccent,
-                  ],
-                  [
-                    'Priority Cases',
-                    '1',
-                    '+8.4% from last week',
-                    Colors.orangeAccent,
-                  ],
-                  ['Closing Today', '0', '+8.4% from last week', Colors.teal],
-                  [
-                    'Closing This Week',
-                    '0',
-                    '+8.4% from last week',
-                    Colors.purpleAccent,
-                  ],
-                ];
-
-                return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: stats.map((s) {
-                    final List<dynamic> stat = s; // safely cast each list
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOutCubic,
-                      width: cardWidth,
-                      child: _buildStatCard(
-                        stat[0] as String,
-                        stat[1] as String,
-                        stat[2] as String,
-                        stat[3] as Color,
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            _buildSectionCard(
-              title: 'Open/Close Case by Program',
-              child: Center(
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 500),
-                  opacity: 1,
-                  child: Text(
-                    'No data available',
-                    style: GoogleFonts.poppins(color: Colors.grey[600]),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildSectionCard(
-              title: 'Priority Case',
-              child: Center(
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 600),
-                  opacity: 1,
-                  child: Text(
-                    'No priority case found',
-                    style: GoogleFonts.poppins(color: Colors.grey[600]),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            _buildSectionCard(
-              title: 'My Cases',
-              child: Column(
-                children: [
-                  _buildCaseTile(
-                    '001',
-                    '123 Main St',
-                    'Zoning',
-                    'High',
-                    'Noise complaint',
-                  ),
-                  _buildCaseTile(
-                    '002',
-                    '45 Lake Rd',
-                    'Safety',
-                    'Medium',
-                    'Unsafe structure',
-                  ),
-                  _buildCaseTile(
-                    '003',
-                    '99 Hill Ave',
-                    'Health',
-                    'Low',
-                    'Debris issue',
-                  ),
-                ],
-              ),
-            ),
-          ],
+  Widget _buildNavItem(IconData icon, String title, int index) {
+    final isSelected = selectedIndex == index;
+    return ListTile(
+      leading: Icon(icon, color: isSelected ? Colors.amber : Colors.white),
+      title: Text(
+        title,
+        style: GoogleFonts.poppins(
+          color: isSelected ? Colors.amber : Colors.white,
+          fontWeight: FontWeight.w500,
         ),
+      ),
+      tileColor: isSelected ? Colors.black26 : Colors.transparent,
+      onTap: () {
+        setState(() => selectedIndex = index);
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  Widget _buildSubNavItem(String title, int index) {
+    final isSelected = selectedIndex == index;
+    return ListTile(
+      leading: const Icon(Icons.circle, size: 10, color: Colors.white),
+      title: Text(
+        title,
+        style: GoogleFonts.poppins(
+          color: isSelected ? Colors.amber : Colors.white,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      tileColor: isSelected ? Colors.black26 : Colors.transparent,
+      contentPadding: const EdgeInsets.only(left: 40, right: 8),
+      onTap: () {
+        setState(() => selectedIndex = index);
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  Widget _buildDashboardContent() {
+    // ✅ Your existing dashboard content
+    final screenWidth = MediaQuery.of(context).size.width;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              int columns = constraints.maxWidth > 400 ? 2 : 1;
+              double cardWidth =
+                  (constraints.maxWidth - (12 * (columns - 1))) / columns;
+
+              final stats = [
+                [
+                  'My Open Cases',
+                  '3',
+                  '+8.4% from last week',
+                  Colors.pinkAccent,
+                ],
+                [
+                  'My New Cases',
+                  '0',
+                  '+8.4% from last week',
+                  Colors.blueAccent,
+                ],
+                [
+                  'Priority Cases',
+                  '1',
+                  '+8.4% from last week',
+                  Colors.orangeAccent,
+                ],
+                ['Closing Today', '0', '+8.4% from last week', Colors.teal],
+                [
+                  'Closing This Week',
+                  '0',
+                  '+8.4% from last week',
+                  Colors.purpleAccent,
+                ],
+              ];
+
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: stats.map((s) {
+                  final List<dynamic> stat = s;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeOutCubic,
+                    width: cardWidth,
+                    child: _buildStatCard(
+                      stat[0] as String,
+                      stat[1] as String,
+                      stat[2] as String,
+                      stat[3] as Color,
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          _buildSectionCard(
+            title: 'Open/Close Case by Program',
+            child: Center(
+              child: Text(
+                'No data available',
+                style: GoogleFonts.poppins(color: Colors.grey[600]),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildSectionCard(
+            title: 'Priority Case',
+            child: Center(
+              child: Text(
+                'No priority case found',
+                style: GoogleFonts.poppins(color: Colors.grey[600]),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -205,14 +250,13 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 400),
+          Text(
+            value,
             style: GoogleFonts.poppins(
               color: color,
               fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
-            child: Text(value),
           ),
           Text(
             subtitle,
@@ -228,9 +272,7 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildSectionCard({required String title, required Widget child}) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOut,
+    return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -259,63 +301,6 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 8),
           child,
         ],
-      ),
-    );
-  }
-
-  Widget _buildCaseTile(
-    String caseNo,
-    String address,
-    String program,
-    String priority,
-    String description,
-  ) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 350),
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: ListTile(
-        title: Text(
-          '#$caseNo • $program',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(
-          '$address\n$description',
-          style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: priority == 'High'
-                ? Colors.redAccent.withOpacity(0.2)
-                : priority == 'Medium'
-                ? Colors.orangeAccent.withOpacity(0.2)
-                : Colors.greenAccent.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            priority,
-            style: GoogleFonts.poppins(
-              color: priority == 'High'
-                  ? Colors.redAccent
-                  : priority == 'Medium'
-                  ? Colors.orange
-                  : Colors.green,
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
-            ),
-          ),
-        ),
       ),
     );
   }
