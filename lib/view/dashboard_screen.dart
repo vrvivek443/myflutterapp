@@ -49,13 +49,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: isMobile
           ? AppBar(
               backgroundColor: const Color(0xFF084852),
+              iconTheme: const IconThemeData(color: Colors.white),
               title: Text(
                 'City Staff',
                 style: GoogleFonts.poppins(color: Colors.white),
               ),
             )
           : null,
-      drawer: isMobile ? Drawer(child: _buildSideNav()) : null,
+      drawer: isMobile
+      ? Drawer(
+          backgroundColor: Colors.white, // 👈 sets drawer color to white
+          child: _buildSideNav(),
+        )
+      : null,
       body: Row(
         children: [
           if (!isMobile)
