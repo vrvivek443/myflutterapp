@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../view/new_complaint_screen.dart';
-import '../view/case_search_screen.dart';
+import '../controller/microsoft_login_cubit.dart';
+import '../view/login_screen.dart';
+import 'package:myflutterapp/view/new_complaint_screen.dart';
+import 'package:myflutterapp/view/case_search_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -57,11 +60,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )
           : null,
       drawer: isMobile
-      ? Drawer(
-          backgroundColor: Colors.white, // 👈 sets drawer color to white
-          child: _buildSideNav(),
-        )
-      : null,
+          ? Drawer(
+              backgroundColor: Colors.white,
+              child: _buildSideNav(),
+            )
+          : null,
       body: Row(
         children: [
           if (!isMobile)
@@ -119,10 +122,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildSubNavItem(Icons.search, "Case Search", 2),
             ],
           ),
+          const Divider(),
+          _buildLogoutButton(), // Add logout button here
         ],
       ),
     );
   }
+
+  Widget _buildLogoutButton() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 20),
+      child: TextButton(
+        onPressed: _logout, // When pressed, call the logout function
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white, // Text color
+          backgroundColor: Colors.redAccent, // Button background color
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.logout, color: Colors.white),
+            SizedBox(width: 8),
+            Text("Logout", style: TextStyle(color: Colors.white)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _logout() async {
+    try {
+      // Call the logout function from the AuthCubit to handle Microsoft OAuth logout
+      await context.read<AuthCubit>().logout(); // This handles the Microsoft OAuth logout
+
+      // Navigate to Login Screen after logout
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()), // Navigate to the login screen
+      );
+    } catch (e) {
+      // Handle any errors that occur during the logout process
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error logging out: $e')),
+      );
+    }
+  }
+
 
   Widget _buildNavItem(IconData icon, String title, int index) {
     final isSelected = selectedIndex == index;
@@ -275,21 +324,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
               fontSize: 13,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             value,
             style: GoogleFonts.poppins(
               color: color,
-              fontSize: 28,
               fontWeight: FontWeight.bold,
+              fontSize: 22,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             subtitle,
             style: GoogleFonts.poppins(
-              color: Colors.grey,
-              fontSize: 11,
+              color: Colors.black45,
               fontWeight: FontWeight.w400,
+              fontSize: 13,
             ),
           ),
         ],
@@ -297,36 +347,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSectionCard({required String title, required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              color: Colors.black87,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
+  Widget _buildSectionCard({
+    required String title,
+    required Widget child,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.poppins(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-          ),
-          const Divider(),
-          const SizedBox(height: 8),
-          child,
-        ],
+            const SizedBox(height: 12),
+            child,
+          ],
+        ),
       ),
     );
   }

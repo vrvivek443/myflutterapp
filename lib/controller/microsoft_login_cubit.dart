@@ -9,6 +9,7 @@ import '../main.dart';
 import '../services/api.dart';
 import 'microsoft_login_state.dart';
 
+
 class AuthCubit extends Cubit<AuthState> {
   late AadOAuth oauth;
 
