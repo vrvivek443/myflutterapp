@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import '../view/new_complaint_screen.dart';
+import '../view/case_search_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -12,6 +13,31 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   bool caseManagementExpanded = false;
   int selectedIndex = 0;
+
+  void _navigateTo(int index) {
+    setState(() => selectedIndex = index);
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const NewComplaintScreen()),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const CaseSearchScreen()),
+        );
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             decoration: const BoxDecoration(color: Color(0xFF084852)),
             child: Row(
               children: [
+                const Icon(Icons.business, color: Colors.white, size: 36),
                 const SizedBox(width: 10),
                 Text(
                   "City Staff",
@@ -69,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ExpansionTile(
             collapsedIconColor: Colors.white,
             iconColor: Colors.white,
-            leading: const Icon(Icons.folder_shared, color:Colors.white),
+            leading: const Icon(Icons.folder_shared, color: Colors.white),
             title: Text(
               "Case Management",
               style: GoogleFonts.poppins(
@@ -82,8 +109,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               setState(() => caseManagementExpanded = expanded);
             },
             children: [
-              _buildSubNavItem("New Complaint", 1),
-              _buildSubNavItem("Case Search", 2),
+              _buildSubNavItem(Icons.add_circle_outline, "New Complaint", 1),
+              _buildSubNavItem(Icons.search, "Case Search", 2),
             ],
           ),
         ],
@@ -103,17 +130,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
       tileColor: isSelected ? Colors.black26 : Colors.transparent,
-      onTap: () {
-        setState(() => selectedIndex = index);
-        Navigator.pop(context);
-      },
+      onTap: () => _navigateTo(index),
     );
   }
 
-  Widget _buildSubNavItem(String title, int index) {
+  Widget _buildSubNavItem(IconData icon, String title, int index) {
     final isSelected = selectedIndex == index;
     return ListTile(
-      leading: const Icon(Icons.circle, size: 10, color: Colors.white),
+      leading: Icon(icon, color: Colors.white, size: 20),
       title: Text(
         title,
         style: GoogleFonts.poppins(
@@ -123,15 +147,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       tileColor: isSelected ? Colors.black26 : Colors.transparent,
       contentPadding: const EdgeInsets.only(left: 40, right: 8),
-      onTap: () {
-        setState(() => selectedIndex = index);
-        Navigator.pop(context);
-      },
+      onTap: () => _navigateTo(index),
     );
   }
 
   Widget _buildDashboardContent() {
-    // ✅ Your existing dashboard content
     final screenWidth = MediaQuery.of(context).size.width;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
