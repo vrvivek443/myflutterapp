@@ -126,7 +126,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
       backgroundColor: const Color(0xFFF5F7FF),
       appBar: AppBar(
         title: Text('New Complaint', style: GoogleFonts.poppins()),
-        backgroundColor: const Color(0xFF084852),
+        backgroundColor: const Color(0xFF0D6EFD),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -161,7 +161,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
                     CircleAvatar(
                       radius: isActive ? 18 : 16,
                       backgroundColor: isActive
-                          ? const Color(0xFF084852)
+                          ? const Color(0xFF0D6EFD)
                           : isCompleted
                           ? Colors.teal
                           : Colors.grey.shade300,
@@ -182,7 +182,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: isActive
-                              ? const Color(0xFF084852)
+                              ? const Color(0xFF0D6EFD)
                               : Colors.black54,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -301,7 +301,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
               alignment: Alignment.centerRight,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF084852),
+                  backgroundColor: const Color(0xFF0D6EFD),
                 ),
                 icon: const Icon(Icons.map),
                 label: const Text('View Map'),
@@ -342,7 +342,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF084852),
+                    backgroundColor: const Color(0xFF0D6EFD),
                   ),
                   onPressed: () => _showAddPersonDialog(),
                   icon: const Icon(Icons.person_add),
@@ -431,7 +431,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF084852),
+                backgroundColor: const Color(0xFF0D6EFD),
               ),
               onPressed: () {
                 final p = Person(
@@ -645,7 +645,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF084852),
+                    backgroundColor: const Color(0xFF0D6EFD),
                   ),
                   icon: const Icon(Icons.add),
                   label: const Text('Add Violation'),
@@ -723,7 +723,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF084852),
+                backgroundColor: const Color(0xFF0D6EFD),
               ),
               onPressed: () {
                 final v = Violation(
@@ -766,7 +766,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF084852),
+                    backgroundColor: const Color(0xFF0D6EFD),
                   ),
                   icon: const Icon(Icons.add),
                   label: const Text('Add Action'),
@@ -866,7 +866,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF084852),
+                backgroundColor: const Color(0xFF0D6EFD),
               ),
               onPressed: () {
                 final a = ActionLog(
@@ -923,7 +923,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
         const SizedBox(width: 12),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF084852),
+            backgroundColor: const Color(0xFF0D6EFD),
           ),
           onPressed: _nextStep,
           child: Text(isLast ? 'Submit' : 'Next', style: GoogleFonts.poppins()),

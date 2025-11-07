@@ -51,7 +51,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: const Color(0xFFF5F7FF),
       appBar: isMobile
           ? AppBar(
-              backgroundColor: const Color(0xFF084852),
+              backgroundColor:const Color(0xFF0D6EFD),
               iconTheme: const IconThemeData(color: Colors.white),
               title: Text(
                 'City Staff',
@@ -70,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (!isMobile)
             Container(
               width: 250,
-              color: const Color(0xFF084852),
+              color: const Color(0xFF0D6EFD),
               child: _buildSideNav(),
             ),
           Expanded(child: _buildDashboardContent()),
@@ -81,11 +81,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildSideNav() {
     return Container(
-      color: const Color(0xFF084852),
+      color: const Color(0xFF0D6EFD),
       child: ListView(
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(color: Color(0xFF084852)),
+            decoration: const BoxDecoration(color: Color(0xFF0D6EFD)),
             child: Row(
               children: [
                 const Icon(Icons.business, color: Colors.white, size: 36),

@@ -10,35 +10,21 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0D6EFD),  // Set the background color to 0xFF084852
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D6EFD),
         elevation: 0,
         title: Row(
-          children: [
-            Container(
-              height: 36,
-              width: 36,
-              // decoration: BoxDecoration(
-              //   color: Colors.white,
-              //   borderRadius: BorderRadius.circular(6),
-              // ),
-              padding: const EdgeInsets.all(4),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.network(
-                  'https://codeenforcementapp.web.app/assets/images/SJ_color_logo.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              "Codex App",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          children: const [
+            SizedBox(width: 12), // Adding some space to the left
+            // Text(
+            //   "Codex App",
+            //   style: TextStyle(
+            //     color: Colors.white,
+            //     fontWeight: FontWeight.bold,
+            //     fontSize: 24, // Adjust the font size as per your need
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -70,23 +56,75 @@ class LoginScreen extends StatelessWidget {
           }
 
           return Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF084852),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () {
-                context.read<AuthCubit>().login(); // Trigger login
-              },
-              child: const Text(
-                "Login with Microsoft",
-                style: TextStyle(fontSize: 16, color: Colors.white),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0), // Add padding around the screen's content
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center, // Center the content vertically
+                crossAxisAlignment: CrossAxisAlignment.center, // Center the content horizontally
+                children: [
+                  // Logo
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.network(
+                      'https://codeenforcementapp.web.app/assets/images/SJ_color_logo.png',
+                      height: 100, // Set the height of the logo
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20), // Space between the logo and the text
+
+                  // Codex App Text (centered at the top)
+                  const Text(
+                    "Codex App",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 30, // Make the title big and bold
+                    ),
+                  ),
+
+                  const SizedBox(height: 30), // Space between the title and the button
+
+                  // Login with Microsoft Button
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 14,
+                      ),
+                      foregroundColor: Colors.white, // Default text color (white)
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold, // Bold text
+                      ),
+                    ).copyWith(
+                      // Set the hover and pressed states for the button
+                      overlayColor: WidgetStateProperty.all(Colors.transparent), // Remove the default overlay color
+                      backgroundColor: WidgetStateProperty.all(Colors.transparent), // Make sure the button stays transparent
+                      textStyle: WidgetStateProperty.resolveWith<TextStyle>((states) {
+                        if (states.contains(WidgetState.hovered)) {
+                          return const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0D6EFD),  // Blue color when hovered
+                          );
+                        }
+                        return const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,  // Default text color is white
+                        );
+                      }),
+                    ),
+                    onPressed: () {
+                      context.read<AuthCubit>().login(); // Trigger login on press
+                    },
+                    child: const Text(
+                      "Login with Microsoft",
+                    ),
+                  ),
+                ],
               ),
             ),
           );

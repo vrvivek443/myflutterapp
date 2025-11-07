@@ -12,7 +12,7 @@ class CaseSearchScreen extends StatelessWidget {
           'Case Search',
           style: GoogleFonts.poppins(),
         ),
-        backgroundColor: const Color(0xFF084852),
+        backgroundColor: const Color(0xFF0D6EFD),
       ),
       body: Center(
         child: Text(
