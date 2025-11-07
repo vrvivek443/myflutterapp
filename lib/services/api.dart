@@ -48,23 +48,21 @@ class API {
     }
   }
 
-  Future<Response> getDashboardData({String? token}) async {
-    var dio = Dio();
-    try {
-      final response = await dio.get(
-        'https://demo.gov-codex.com:8001/api/user/dashboard',
-        options: Options(
-          headers: {
-            if (token != null) 'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
-          },
-        ),
-      );
-      print('Dashboard Data: ${response.data}');
-      return response;
-    } catch (e) {
-      print("Http Error (getDashboardData): ${e.toString()}");
-      rethrow;
-    }
+  Future<Response> getDashboardData() async {
+  var dio = Dio();
+  dio.interceptors.add(PrettyDioLogger());
+
+  try {
+    final response = await dio.get(
+      'https://demo.gov-codex.com:8001/api/user/dashboard',
+    );
+    print("✅ Dashboard API Response: ${response.data}");
+    return response;
+  } catch (e) {
+    print('❌ Http Error : ${e.toString()}');
+    rethrow;
   }
+}
+
+
 }

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controller/microsoft_login_cubit.dart';
 import '../view/login_screen.dart';
+import '../services/api.dart';
+import 'package:dio/dio.dart';
 import 'package:myflutterapp/view/new_complaint_screen.dart';
 import 'package:myflutterapp/view/case_search_screen.dart';
 
@@ -207,90 +209,114 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildDashboardContent() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              int columns = constraints.maxWidth > 400 ? 2 : 1;
-              double cardWidth =
-                  (constraints.maxWidth - (12 * (columns - 1))) / columns;
+  return FutureBuilder<Response>(
+    future: API().getDashboardData(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-              final stats = [
-                [
-                  'My Open Cases',
-                  '3',
-                  '+8.4% from last week',
-                  Colors.pinkAccent,
-                ],
-                [
-                  'My New Cases',
-                  '0',
-                  '+8.4% from last week',
-                  Colors.blueAccent,
-                ],
-                [
-                  'Priority Cases',
-                  '1',
-                  '+8.4% from last week',
-                  Colors.orangeAccent,
-                ],
-                ['Closing Today', '0', '+8.4% from last week', Colors.teal],
-                [
-                  'Closing This Week',
-                  '0',
-                  '+8.4% from last week',
-                  Colors.purpleAccent,
-                ],
-              ];
-
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: stats.map((s) {
-                  final List<dynamic> stat = s;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeOutCubic,
-                    width: cardWidth,
-                    child: _buildStatCard(
-                      stat[0] as String,
-                      stat[1] as String,
-                      stat[2] as String,
-                      stat[3] as Color,
-                    ),
-                  );
-                }).toList(),
-              );
-            },
+      if (snapshot.hasError) {
+        return Center(
+          child: Text(
+            'Error loading dashboard data: ${snapshot.error}',
+            style: GoogleFonts.poppins(color: Colors.redAccent),
           ),
-          const SizedBox(height: 20),
-          _buildSectionCard(
-            title: 'Open/Close Case by Program',
-            child: Center(
-              child: Text(
-                'No data available',
-                style: GoogleFonts.poppins(color: Colors.grey[600]),
+        );
+      }
+
+      if (!snapshot.hasData || snapshot.data?.data == null) {
+        return Center(
+          child: Text(
+            'No data available',
+            style: GoogleFonts.poppins(color: Colors.grey[600]),
+          ),
+        );
+      }
+
+      final rawData = snapshot.data!.data;
+      print("📊 Dashboard API Raw Response: $rawData");
+
+      final widgets = rawData['dashboard']?['widgets'];
+      if (widgets == null || widgets is! List) {
+        return Center(
+          child: Text(
+            'No widgets found in dashboard data.',
+            style: GoogleFonts.poppins(color: Colors.grey[600]),
+          ),
+        );
+      }
+
+      final colorPalette = [
+        Colors.pinkAccent,
+        Colors.blueAccent,
+        Colors.orangeAccent,
+        Colors.teal,
+        Colors.purpleAccent,
+        Colors.green,
+      ];
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                int columns = constraints.maxWidth > 400 ? 2 : 1;
+                double cardWidth =
+                    (constraints.maxWidth - (12 * (columns - 1))) / columns;
+
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: List.generate(widgets.length, (index) {
+                    final item = widgets[index];
+                    final color = colorPalette[index % colorPalette.length];
+
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeOutCubic,
+                      width: cardWidth,
+                      child: _buildStatCard(
+                        item['displaytext'] ?? 'Unknown',
+                        item['displaycount'].toString(),
+                        '+0% from last week',
+                        color,
+                      ),
+                    );
+                  }),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            _buildSectionCard(
+              title: 'Open/Close Case by Program',
+              child: Center(
+                child: Text(
+                  'No data available',
+                  style: GoogleFonts.poppins(color: Colors.grey[600]),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildSectionCard(
-            title: 'Priority Case',
-            child: Center(
-              child: Text(
-                'No priority case found',
-                style: GoogleFonts.poppins(color: Colors.grey[600]),
+            const SizedBox(height: 16),
+            _buildSectionCard(
+              title: 'Priority Case',
+              child: Center(
+                child: Text(
+                  'No priority case found',
+                  style: GoogleFonts.poppins(color: Colors.grey[600]),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
+    },
+  );
+}
+
+
 
   Widget _buildStatCard(
     String title,
