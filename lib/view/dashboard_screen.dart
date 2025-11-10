@@ -82,10 +82,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSideNav() {
-    return Container(
-      color: const Color(0xFF0D6EFD),
-      child: ListView(
+  return Container(
+    color: const Color(0xFF0D6EFD),
+    child: SafeArea(
+      child: Column(
         children: [
+          // Drawer Header
           DrawerHeader(
             decoration: const BoxDecoration(color: Color(0xFF0D6EFD)),
             child: Row(
@@ -103,58 +105,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-          _buildNavItem(Icons.dashboard, "Dashboard", 0),
-          ExpansionTile(
-            collapsedIconColor: Colors.white,
-            iconColor: Colors.white,
-            leading: const Icon(Icons.folder_shared, color: Colors.white),
-            title: Text(
-              "Case Management",
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
+
+          // Navigation Items (scrollable)
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildNavItem(Icons.dashboard, "Dashboard", 0),
+                ExpansionTile(
+                  collapsedIconColor: Colors.white,
+                  iconColor: Colors.white,
+                  leading: const Icon(Icons.folder_shared, color: Colors.white),
+                  title: Text(
+                    "Case Management",
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  initiallyExpanded: caseManagementExpanded,
+                  onExpansionChanged: (expanded) {
+                    setState(() => caseManagementExpanded = expanded);
+                  },
+                  children: [
+                    _buildSubNavItem(Icons.add_circle_outline, "New Complaint", 1),
+                    _buildSubNavItem(Icons.search, "Case Search", 2),
+                  ],
+                ),
+              ],
             ),
-            initiallyExpanded: caseManagementExpanded,
-            onExpansionChanged: (expanded) {
-              setState(() => caseManagementExpanded = expanded);
-            },
-            children: [
-              _buildSubNavItem(Icons.add_circle_outline, "New Complaint", 1),
-              _buildSubNavItem(Icons.search, "Case Search", 2),
-            ],
           ),
-          const Divider(),
-          _buildLogoutButton(), // Add logout button here
+
+          const Divider(color: Colors.white70),
+
+          // Logout button at bottom
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: _buildLogoutButton(),
+            ),
+          ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildLogoutButton() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 20),
-      child: TextButton(
-        onPressed: _logout, // When pressed, call the logout function
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.white, // Text color
-          backgroundColor: Colors.redAccent, // Button background color
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          shape: RoundedRectangleBorder(
+  return Padding(
+    padding: const EdgeInsets.only(top: 16, bottom: 20),
+    child: TextButton.icon(
+      onPressed: _logout, // Call logout function
+      icon: const Icon(Icons.logout, color: Colors.white),
+      label: const Text(
+        "Logout",
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(Colors.transparent),
+        overlayColor: WidgetStateProperty.all(
+          Colors.white.withOpacity(0.1), // soft hover ripple
+        ),
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.logout, color: Colors.white),
-            SizedBox(width: 8),
-            Text("Logout", style: TextStyle(color: Colors.white)),
-          ],
-        ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Future<void> _logout() async {
     try {
