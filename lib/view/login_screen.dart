@@ -17,14 +17,6 @@ class LoginScreen extends StatelessWidget {
         title: Row(
           children: const [
             SizedBox(width: 12), // Adding some space to the left
-            // Text(
-            //   "Codex App",
-            //   style: TextStyle(
-            //     color: Colors.white,
-            //     fontWeight: FontWeight.bold,
-            //     fontSize: 24, // Adjust the font size as per your need
-            //   ),
-            // ),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 // new_complaint_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../layout/main_layout.dart';
 
 class NewComplaintScreen extends StatefulWidget {
   const NewComplaintScreen({super.key});
@@ -122,17 +123,24 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
     final width = MediaQuery.of(context).size.width;
     final isNarrow = width < 700;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FF),
-      appBar: AppBar(
-        title: Text('New Complaint', style: GoogleFonts.poppins()),
-        backgroundColor: const Color(0xFF0D6EFD),
-      ),
-      body: SingleChildScrollView(
+    return MainLayout(
+      selectedIndex: 1, // Highlight "New Complaint" in SideNav
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Since MainLayout already has AppBar, we only show title here
+            Text(
+              'New Complaint',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 16),
+
             _buildStepperHeader(isNarrow),
             const SizedBox(height: 16),
             _buildStepContent(isNarrow),
