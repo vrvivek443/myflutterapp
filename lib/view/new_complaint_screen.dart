@@ -12,9 +12,25 @@ class NewComplaintScreen extends StatefulWidget {
 
 class _NewComplaintScreenState extends State<NewComplaintScreen> {
   int _currentStep = 0;
+  bool _propertyLoaded = false;
 
   // Forms & controllers
   final _propertyFormKey = GlobalKey<FormState>();
+  final List<String> streetTypes = [
+  'Street',
+  'Avenue',
+  'Boulevard',
+  'Drive',
+  'Lane',
+  'Road',
+  'Court',
+  'Terrace',
+  'Way',
+  'Place',
+];
+String? selectedStreetType;
+
+
   final _peopleFormKey = GlobalKey<FormState>();
   final _caseFormKey = GlobalKey<FormState>();
   final _inspectorFormKey = GlobalKey<FormState>();
@@ -119,39 +135,47 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isNarrow = width < 700;
+Widget build(BuildContext context) {
+  final width = MediaQuery.of(context).size.width;
+  final isNarrow = width < 700;
 
-    return MainLayout(
-      selectedIndex: 1, // Highlight "New Complaint" in SideNav
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Since MainLayout already has AppBar, we only show title here
-            Text(
-              'New Complaint',
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+  return MainLayout(
+    selectedIndex: 1,
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'New Complaint',
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
-            const SizedBox(height: 16),
+          ),
+          const SizedBox(height: 16),
 
-            _buildStepperHeader(isNarrow),
-            const SizedBox(height: 16),
-            _buildStepContent(isNarrow),
-            const SizedBox(height: 20),
-            _buildControls(),
-            const SizedBox(height: 30),
-          ],
-        ),
+          // 👇 Show search section first
+          if (!_propertyLoaded)
+            _buildPropertySearch(isNarrow)
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStepperHeader(isNarrow),
+                const SizedBox(height: 16),
+                _buildStepContent(isNarrow),
+                const SizedBox(height: 20),
+                _buildControls(),
+              ],
+            ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildStepperHeader(bool isNarrow) {
     return SingleChildScrollView(
@@ -212,6 +236,98 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
       ),
     );
   }
+
+  Widget _buildPropertySearch(bool isNarrow) {
+  return _wrapCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Property Information',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _sizedField(
+              controller: apnController,
+              label: 'APN Number',
+              width: isNarrow ? double.infinity : 200,
+            ),
+            _sizedField(
+              controller: aptController,
+              label: 'Apartment Number',
+              width: isNarrow ? double.infinity : 180,
+            ),
+            _sizedField(
+              controller: streetNoController,
+              label: 'Street Number',
+              width: isNarrow ? double.infinity : 150,
+            ),
+           SizedBox(
+  width: isNarrow ? double.infinity : 200,
+  child: DropdownButtonFormField<String>(
+    value: selectedStreetType,
+    decoration: InputDecoration(
+      labelText: 'Street Type',
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+    ),
+    items: streetTypes
+        .map((type) => DropdownMenuItem<String>(
+              value: type,
+              child: Text(type),
+            ))
+        .toList(),
+    onChanged: (value) {
+      setState(() {
+        selectedStreetType = value;
+      });
+    },
+  ),
+),
+IconButton(
+  icon: const Icon(Icons.search, color: Colors.black),
+  style: IconButton.styleFrom(
+    backgroundColor: Colors.amber,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+  ),
+  onPressed: () {
+    // TODO: Replace with actual search API later
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Searching property...')),
+    );
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() => _propertyLoaded = true);
+    });
+  },
+),
+
+          ],
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Map view (mock)')),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0D6EFD),
+            ),
+            child: const Text('View Map'),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildStepContent(bool isNarrow) {
     switch (_currentStep) {
