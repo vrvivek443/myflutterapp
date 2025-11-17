@@ -64,5 +64,18 @@ class API {
   }
 }
 
+Future<Map<String, dynamic>> searchProperty(Map<String, dynamic> fields) async {
+  var dio = Dio();
+  dio.interceptors.add(PrettyDioLogger());
+    try {
+      final response = await dio.get(
+        'https://demo.gov-codex.com:8001/api/cityaddress/getAddressByFields',
+        queryParameters: fields,
+      );
+      return response.data;
+    } catch (e) {
+      throw Exception("Property search failed: $e");
+    }
+  }
 
 }

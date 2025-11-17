@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../layout/main_layout.dart';
 import '../view/components/property-info.dart';
+import '../view/components/people-info.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:dio/dio.dart';
+import '../services/api.dart';
 
 class NewComplaintScreen extends StatefulWidget {
   const NewComplaintScreen({super.key});
@@ -38,6 +40,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
   final _inspectorFormKey = GlobalKey<FormState>();
   final _violationsFormKey = GlobalKey<FormState>();
   final _actionFormKey = GlobalKey<FormState>();
+
 
   // Property controllers
   final TextEditingController apnController = TextEditingController();
@@ -340,14 +343,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Searching property...')),
-                    );
-                    Future.delayed(const Duration(seconds: 1), () {
-                      setState(() => _propertyLoaded = true);
-                    });
-                  },
+                  onPressed: _searchProperty,
                 ),
               ],
             ),
@@ -371,6 +367,52 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
       ),
     );
   }
+
+  Future<void> _searchProperty() async {
+  final Map<String, dynamic> fields = {};
+
+  if (apnController.text.trim().isNotEmpty) {
+    fields['apnNumber'] = apnController.text.trim();
+  }
+  if (aptController.text.trim().isNotEmpty) {
+    fields['apartmentNumber'] = aptController.text.trim();
+  }
+  if (streetNoController.text.trim().isNotEmpty) {
+    fields['streetNumber'] = streetNoController.text.trim();
+  }
+  if (selectedStreetType != null && selectedStreetType!.isNotEmpty) {
+    fields['streetType'] = selectedStreetType!;
+  }
+
+  if (fields.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Enter at least one field")),
+    );
+    return;
+  }
+
+  try {
+    final result = await API().searchProperty(fields);
+
+    print("Property Search API Result: $result");
+
+    setState(() {
+      _propertyLoaded = true;
+      // store result if you want:
+      // propertySearchResults = result;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Search complete")),
+    );
+
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(e.toString())),
+    );
+  }
+}
+
 
   Widget _buildStepContent(bool isNarrow) {
     switch (_currentStep) {
@@ -403,139 +445,33 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
   // 1. Property Info UI
   // -----------------------
   Widget _buildPropertyInfo(bool isNarrow) {
-    return Form(
-      key: _propertyFormKey,
-      child: _wrapCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Property Information',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                _sizedField(
-                  controller: apnController,
-                  label: 'APN Number',
-                  width: isNarrow ? double.infinity : 220,
-                ),
-                _sizedField(
-                  controller: aptController,
-                  label: 'Apartment Number',
-                  width: isNarrow ? double.infinity : 180,
-                ),
-                _sizedField(
-                  controller: streetNoController,
-                  label: 'Street Number',
-                  width: isNarrow ? double.infinity : 140,
-                ),
-                _sizedField(
-                  controller: streetNameController,
-                  label: 'Street Name',
-                  width: isNarrow ? double.infinity : 220,
-                ),
-                _sizedField(
-                  controller: districtController,
-                  label: 'District',
-                  width: isNarrow ? double.infinity : 220,
-                ),
-                _sizedField(
-                  controller: cityController,
-                  label: 'City',
-                  width: isNarrow ? double.infinity : 150,
-                ),
-                _sizedField(
-                  controller: stateController,
-                  label: 'State',
-                  width: isNarrow ? double.infinity : 120,
-                ),
-                _sizedField(
-                  controller: zipController,
-                  label: 'Zip',
-                  width: isNarrow ? double.infinity : 120,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0D6EFD),
-                ),
-                icon: const Icon(Icons.map),
-                label: const Text('View Map'),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Map view (mock)')),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  return PropertyInfoSection(
+    formKey: _propertyFormKey,
+    apnController: apnController,
+    aptController: aptController,
+    streetNoController: streetNoController,
+    streetNameController: streetNameController,
+    districtController: districtController,
+    cityController: cityController,
+    stateController: stateController,
+    zipController: zipController,
+    isNarrow: isNarrow,
+  );
+}
 
   // -----------------------
   // 2. People Info UI
   // -----------------------
   Widget _buildPeopleInfo(bool isNarrow) {
-    return Form(
-      key: _peopleFormKey,
-      child: _wrapCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'People Information',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ...people.map((p) => _peopleTile(p)).toList(),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D6EFD),
-                  ),
-                  onPressed: () => _showAddPersonDialog(),
-                  icon: const Icon(Icons.person_add),
-                  label: const Text('Add Person'),
-                ),
-                const SizedBox(width: 12),
-                if (people.isNotEmpty)
-                  Text(
-                    '${people.length} person(s)',
-                    style: GoogleFonts.poppins(),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Note: Add complainant or related persons',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  return PeopleInfoSection(
+    formKey: _peopleFormKey,
+    people: people,
+    onAddPerson: _showAddPersonDialog,
+    peopleTileBuilder: (p) => _peopleTile(p),
+    isNarrow: isNarrow,
+  );
+}
+
 
   Widget _peopleTile(Person p) {
     return ListTile(
