@@ -78,4 +78,33 @@ Future<Map<String, dynamic>> searchProperty(Map<String, dynamic> fields) async {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getStreetMaster() async {
+  var dio = Dio();
+  dio.interceptors.add(PrettyDioLogger());
+  try {
+    final response = await dio.get(
+      'https://demo.gov-codex.com:8001/api/streetmaster/getAll',
+    );
+
+    if (response.statusCode == 200 && response.data != null) {
+      final List<dynamic> results = response.data['data']; // ✅ Change 'results' to 'data'
+
+      return results
+          .map((item) => {
+                "id": item["id"],
+                "streetTypeCode": item["streetTypeCode"],
+                "streetName": item["streetname"], // Make sure 'streetName' is correct key
+                "text": item["streettype"], // For dropdown display
+              })
+          .toList();
+    }
+
+    return [];
+  } catch (e) {
+    print("API Error (getStreetMaster): $e");
+    return [];
+  }
+}
+
+
 }

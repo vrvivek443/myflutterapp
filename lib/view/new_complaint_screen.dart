@@ -21,6 +21,7 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
 
   // Forms & controllers
   final _propertyFormKey = GlobalKey<FormState>();
+  List<Map<String, dynamic>> streetMasterList = [];
   final List<String> streetTypes = [
     'Street',
     'Avenue',
@@ -34,13 +35,13 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
     'Place',
   ];
   String? selectedStreetType;
+  String? selectedStreetName;
 
   final _peopleFormKey = GlobalKey<FormState>();
   final _caseFormKey = GlobalKey<FormState>();
   final _inspectorFormKey = GlobalKey<FormState>();
   final _violationsFormKey = GlobalKey<FormState>();
   final _actionFormKey = GlobalKey<FormState>();
-
 
   // Property controllers
   final TextEditingController apnController = TextEditingController();
@@ -73,6 +74,29 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
   // helper lists
   final List<String> priorities = ['Low', 'Medium', 'High'];
   final List<String> categories = ['Zoning', 'Health', 'Safety', 'Other'];
+
+  bool _streetMasterLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_streetMasterLoaded) {
+      _streetMasterLoaded = true;
+      loadStreetMaster();
+    }
+  }
+
+  Future<void> loadStreetMaster() async {
+  final data = await API().getStreetMaster();
+
+  print('Loaded street master data: $data'); // Debugging to see if data is being loaded
+
+  setState(() {
+    streetMasterList = data;
+  });
+}
+
 
   @override
   void dispose() {
@@ -281,9 +305,10 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
                 // ✅ Street Type Dropdown (Select2 equivalent)
                 SizedBox(
                   width: isNarrow ? double.infinity : 200,
-                  child: DropdownSearch<String>(
+                  child: DropdownSearch<StreetType>(
                     asyncItems: (String? filter) async {
-                      if (filter == null || filter.isEmpty) return <String>[];
+                      if (filter == null || filter.isEmpty)
+                        return <StreetType>[];
 
                       try {
                         final dio = Dio();
@@ -299,20 +324,18 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
                         final results =
                             response.data['results'] as List<dynamic>;
 
-                        // Map correctly from API
-                        return results
-                            .map((item) => item['text'].toString().trim())
-                            .toList();
+                        return results.map((item) {
+                          return StreetType(
+                            id: item['id'].toString(),
+                            text: item['text'].toString().trim(),
+                          );
+                        }).toList();
                       } catch (e) {
-                        print('DropdownSearch API error: $e');
-                        return <String>[];
+                        print("StreetType Dropdown Error: $e");
+                        return <StreetType>[];
                       }
                     },
-                    onChanged: (value) {
-                      setState(() {
-                        selectedStreetType = value;
-                      });
-                    },
+
                     dropdownDecoratorProps: DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
                         labelText: 'Street Type',
@@ -321,8 +344,11 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
                         ),
                       ),
                     ),
+
                     popupProps: PopupProps.menu(
                       showSearchBox: true,
+                      isFilterOnline: true,
+                      searchDelay: const Duration(milliseconds: 300),
                       searchFieldProps: TextFieldProps(
                         decoration: const InputDecoration(
                           hintText: 'Type to search...',
@@ -331,6 +357,14 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
                       emptyBuilder: (context, searchEntry) =>
                           const Center(child: Text('No results found')),
                     ),
+
+                    onChanged: (StreetType? value) {
+                      setState(() {
+                        selectedStreetType = value?.id; // 👈 store the object
+                        selectedStreetName = value?.text;
+                      });
+                    },
+
                     clearButtonProps: const ClearButtonProps(isVisible: true),
                   ),
                 ),
@@ -368,6 +402,50 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
     );
   }
 
+  // Future<void> _searchProperty() async {
+  //   final Map<String, dynamic> fields = {};
+
+  //   if (apnController.text.trim().isNotEmpty) {
+  //     fields['apnNumber'] = apnController.text.trim();
+  //   }
+  //   if (aptController.text.trim().isNotEmpty) {
+  //     fields['apartmentNumber'] = aptController.text.trim();
+  //   }
+  //   if (streetNoController.text.trim().isNotEmpty) {
+  //     fields['streetNumber'] = streetNoController.text.trim();
+  //   }
+  //   if (selectedStreetType != null && selectedStreetType!.isNotEmpty) {
+  //     fields['streetType'] = selectedStreetType!;
+  //   }
+
+  //   if (fields.isEmpty) {
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(const SnackBar(content: Text("Enter at least one field")));
+  //     return;
+  //   }
+
+  //   try {
+  //     final result = await API().searchProperty(fields);
+
+  //     print("Property Search API Result: $result");
+
+  //     setState(() {
+  //       _propertyLoaded = true;
+  //       // store result if you want:
+  //       // propertySearchResults = result;
+  //     });
+
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(const SnackBar(content: Text("Search complete")));
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text(e.toString())));
+  //   }
+  // }
+
   Future<void> _searchProperty() async {
   final Map<String, dynamic> fields = {};
 
@@ -380,9 +458,21 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
   if (streetNoController.text.trim().isNotEmpty) {
     fields['streetNumber'] = streetNoController.text.trim();
   }
+
+  // 🔍 FIND MATCHED STREET OBJECT FROM streetMasterList
   if (selectedStreetType != null && selectedStreetType!.isNotEmpty) {
-    fields['streetType'] = selectedStreetType!;
-  }
+  final matchedStreet = streetMasterList.firstWhere(
+    (item) => item['id'].toString() == selectedStreetType!,
+    orElse: () => <String, dynamic>{}, // ✅ empty map
+  );
+  
+  print(matchedStreet);
+
+  fields['streetType'] = matchedStreet['streetTypeCode'];
+  fields['streetName'] = matchedStreet['streetName'];
+}
+
+
 
   if (fields.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -392,20 +482,19 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
   }
 
   try {
+    print("Final fields sent to API: $fields");
+
     final result = await API().searchProperty(fields);
 
     print("Property Search API Result: $result");
 
     setState(() {
       _propertyLoaded = true;
-      // store result if you want:
-      // propertySearchResults = result;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Search complete")),
     );
-
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(e.toString())),
@@ -445,33 +534,32 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
   // 1. Property Info UI
   // -----------------------
   Widget _buildPropertyInfo(bool isNarrow) {
-  return PropertyInfoSection(
-    formKey: _propertyFormKey,
-    apnController: apnController,
-    aptController: aptController,
-    streetNoController: streetNoController,
-    streetNameController: streetNameController,
-    districtController: districtController,
-    cityController: cityController,
-    stateController: stateController,
-    zipController: zipController,
-    isNarrow: isNarrow,
-  );
-}
+    return PropertyInfoSection(
+      formKey: _propertyFormKey,
+      apnController: apnController,
+      aptController: aptController,
+      streetNoController: streetNoController,
+      streetNameController: streetNameController,
+      districtController: districtController,
+      cityController: cityController,
+      stateController: stateController,
+      zipController: zipController,
+      isNarrow: isNarrow,
+    );
+  }
 
   // -----------------------
   // 2. People Info UI
   // -----------------------
   Widget _buildPeopleInfo(bool isNarrow) {
-  return PeopleInfoSection(
-    formKey: _peopleFormKey,
-    people: people,
-    onAddPerson: _showAddPersonDialog,
-    peopleTileBuilder: (p) => _peopleTile(p),
-    isNarrow: isNarrow,
-  );
-}
-
+    return PeopleInfoSection(
+      formKey: _peopleFormKey,
+      people: people,
+      onAddPerson: _showAddPersonDialog,
+      peopleTileBuilder: (p) => _peopleTile(p),
+      isNarrow: isNarrow,
+    );
+  }
 
   Widget _peopleTile(Person p) {
     return ListTile(
@@ -1054,6 +1142,16 @@ class Violation {
   final String severity;
 
   Violation({this.code, this.description, this.severity = 'Medium'});
+}
+
+class StreetType {
+  final String id;
+  final String text;
+
+  StreetType({required this.id, required this.text});
+
+  @override
+  String toString() => text; // 👈 Display ONLY text in dropdown
 }
 
 class ActionLog {
